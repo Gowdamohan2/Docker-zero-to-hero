@@ -3,231 +3,426 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Docker Flask Demo</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <title>TaskFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg:       #0b0f1a;
+      --surface:  #111827;
+      --card:     #1c2537;
+      --border:   #1e2d45;
+      --accent:   #38bdf8;
+      --accent2:  #818cf8;
+      --low:      #34d399;
+      --med:      #fbbf24;
+      --high:     #f87171;
+      --done-bg:  #0f1e14;
+      --txt:      #e2e8f0;
+      --muted:    #4b5563;
+      --mono:     'JetBrains Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
+      background: var(--bg);
+      color: var(--txt);
       font-family: 'Inter', sans-serif;
       min-height: 100vh;
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 2rem 1rem;
-      color: #fff;
+      padding: 2.5rem 1rem 4rem;
     }
 
-    .badge {
-      background: rgba(99, 102, 241, 0.25);
-      border: 1px solid rgba(99, 102, 241, 0.5);
-      color: #a5b4fc;
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      padding: 0.35rem 1rem;
-      border-radius: 999px;
-      margin-bottom: 1.2rem;
-      text-transform: uppercase;
-    }
-
-    h1 {
-      font-size: 2.8rem;
-      font-weight: 800;
-      background: linear-gradient(90deg, #818cf8, #c084fc);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-align: center;
-      margin-bottom: 0.4rem;
-    }
-
-    .subtitle {
-      color: #94a3b8;
-      font-size: 1rem;
-      text-align: center;
+    /* ── Header ─────────────────────────── */
+    header {
+      width: 100%;
+      max-width: 700px;
       margin-bottom: 2rem;
     }
 
-    .card {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      backdrop-filter: blur(16px);
-      border-radius: 1.25rem;
-      padding: 2rem;
-      width: 100%;
-      max-width: 600px;
-      box-shadow: 0 25px 60px rgba(0,0,0,0.4);
-    }
-
-    .info-row {
+    .header-top {
       display: flex;
-      align-items: center;
-      gap: 0.7rem;
-      background: rgba(99,102,241,0.1);
-      border: 1px solid rgba(99,102,241,0.3);
-      border-radius: 0.75rem;
-      padding: 0.8rem 1rem;
+      align-items: baseline;
+      gap: 0.6rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: #fff;
+    }
+
+    .logo span { color: var(--accent); }
+
+    .version {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    .tagline {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    /* ── Stats bar ──────────────────────── */
+    .stats {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 1.25rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .stat-val {
+      font-size: 1.6rem;
+      font-weight: 700;
+      font-family: var(--mono);
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    .stat.done-stat .stat-val  { color: var(--low); }
+    .stat.pend-stat .stat-val  { color: var(--med); }
+
+    /* ── Add form ───────────────────────── */
+    .add-form {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem 1.25rem 1rem;
       margin-bottom: 1.5rem;
-      font-size: 0.85rem;
-      color: #c7d2fe;
+      width: 100%;
+      max-width: 700px;
     }
 
-    .info-row span.dot {
-      width: 10px; height: 10px;
-      background: #22c55e;
-      border-radius: 50%;
-      display: inline-block;
-      animation: pulse 1.5s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-
-    label {
-      font-size: 0.85rem;
+    .form-label {
+      font-size: 0.72rem;
       font-weight: 600;
-      color: #94a3b8;
+      color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.08em;
+      margin-bottom: 0.6rem;
       display: block;
-      margin-bottom: 0.5rem;
     }
 
-    .input-row {
+    .form-row {
       display: flex;
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
+      gap: 0.6rem;
     }
 
     input[type="text"] {
       flex: 1;
-      padding: 0.75rem 1rem;
-      border-radius: 0.65rem;
-      border: 1px solid rgba(255,255,255,0.15);
-      background: rgba(255,255,255,0.07);
-      color: #fff;
-      font-size: 0.95rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--txt);
       font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      padding: 0.65rem 0.9rem;
+      border-radius: 8px;
       outline: none;
-      transition: border 0.2s;
+      transition: border-color 0.2s;
     }
 
-    input[type="text"]::placeholder { color: #475569; }
-    input[type="text"]:focus { border-color: #818cf8; }
+    input[type="text"]::placeholder { color: var(--muted); }
+    input[type="text"]:focus { border-color: var(--accent); }
 
-    button {
-      padding: 0.75rem 1.5rem;
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
-      color: #fff;
-      border: none;
-      border-radius: 0.65rem;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
+    select {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--txt);
       font-family: 'Inter', sans-serif;
-      transition: transform 0.15s, box-shadow 0.15s;
+      font-size: 0.85rem;
+      padding: 0.65rem 0.85rem;
+      border-radius: 8px;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      transition: border-color 0.2s;
     }
 
-    button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 20px rgba(99,102,241,0.4);
+    select:focus { border-color: var(--accent); }
+
+    .btn-add {
+      background: var(--accent);
+      color: #0b0f1a;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 0.65rem 1.3rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.2s, transform 0.15s;
     }
 
-    .section-title {
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #64748b;
+    .btn-add:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-add:active { transform: translateY(0); }
+
+    /* ── Task list ──────────────────────── */
+    .task-list-wrap {
+      width: 100%;
+      max-width: 700px;
+    }
+
+    .list-header {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 0.75rem;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.65rem;
+      padding-left: 0.2rem;
     }
 
-    .message-list {
-      list-style: none;
+    .task-list {
       display: flex;
       flex-direction: column;
-      gap: 0.6rem;
+      gap: 0.55rem;
     }
 
-    .message-list li {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 0.65rem;
-      padding: 0.75rem 1rem;
-      font-size: 0.9rem;
-      color: #e2e8f0;
+    .task-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.9rem 1.1rem;
       display: flex;
       align-items: center;
-      gap: 0.6rem;
-      animation: fadeIn 0.3s ease;
+      gap: 0.9rem;
+      transition: border-color 0.2s, background 0.2s;
+      animation: slide-in 0.2s ease;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
+    @keyframes slide-in {
+      from { opacity: 0; transform: translateY(6px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    .message-list li::before {
-      content: "💬";
-      font-size: 1rem;
+    .task-card:hover { border-color: #2a3a56; }
+
+    .task-card.is-done {
+      background: var(--done-bg);
+      border-color: #0f301f;
     }
 
+    /* custom checkbox */
+    .check-wrap {
+      flex-shrink: 0;
+    }
+
+    .check-wrap a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px; height: 22px;
+      border-radius: 6px;
+      border: 2px solid var(--border);
+      background: transparent;
+      text-decoration: none;
+      transition: border-color 0.2s, background 0.2s;
+      font-size: 0.75rem;
+    }
+
+    .check-wrap a:hover { border-color: var(--low); }
+
+    .is-done .check-wrap a {
+      background: var(--low);
+      border-color: var(--low);
+      color: #000;
+    }
+
+    .task-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .task-title {
+      font-size: 0.92rem;
+      font-weight: 500;
+      color: var(--txt);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color 0.2s;
+    }
+
+    .is-done .task-title {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+
+    .task-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.25rem;
+    }
+
+    .priority-badge {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      font-weight: 500;
+      padding: 0.15rem 0.55rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .priority-badge.low  { background: rgba(52,211,153,0.12); color: var(--low);  border: 1px solid rgba(52,211,153,0.25); }
+    .priority-badge.medium { background: rgba(251,191,36,0.12); color: var(--med); border: 1px solid rgba(251,191,36,0.25); }
+    .priority-badge.high { background: rgba(248,113,113,0.12); color: var(--high); border: 1px solid rgba(248,113,113,0.25); }
+
+    .task-time {
+      font-size: 0.68rem;
+      color: var(--muted);
+    }
+
+    .btn-del {
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1;
+      padding: 0.3rem;
+      border-radius: 6px;
+      transition: color 0.2s, background 0.2s;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+    }
+
+    .btn-del:hover { color: var(--high); background: rgba(248,113,113,0.1); }
+
+    /* ── Empty state ────────────────────── */
     .empty {
       text-align: center;
-      color: #475569;
+      padding: 3rem 0;
+      color: var(--muted);
       font-size: 0.9rem;
-      padding: 1.5rem 0;
     }
 
-    .footer {
-      margin-top: 2rem;
-      color: #334155;
-      font-size: 0.78rem;
+    .empty-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+
+    /* ── Footer ─────────────────────────── */
+    footer {
+      margin-top: 3rem;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--muted);
       text-align: center;
     }
 
-    .footer span { color: #6366f1; font-weight: 600; }
+    footer span { color: var(--accent2); }
   </style>
 </head>
 <body>
 
-  <div class="badge">🐳 Running inside Docker</div>
-  <h1>Flask + Docker Demo</h1>
-  <p class="subtitle">A simple app to learn how Docker containerizes Python apps</p>
-
-  <div class="card">
-
-    <div class="info-row">
-      <span class="dot"></span>
-      Container is <strong>live</strong> &nbsp;·&nbsp; Port mapped: <strong>5000 → 5000</strong> &nbsp;·&nbsp; Framework: <strong>Flask</strong>
+  <header>
+    <div class="header-top">
+      <div class="logo">Task<span>Flow</span></div>
+      <div class="version">v1.0.0</div>
     </div>
+    <p class="tagline">Keep track of what you need to get done.</p>
+  </header>
 
-    <form action="/add" method="POST">
-      <label for="message">Post a message</label>
-      <div class="input-row">
-        <input type="text" id="message" name="message" placeholder="Type something and hit Send..." autocomplete="off"/>
-        <button type="submit">Send</button>
-      </div>
-    </form>
-
-    <div class="section-title">📋 Messages ({{ messages|length }})</div>
-
-    {% if messages %}
-      <ul class="message-list">
-        {% for msg in messages %}
-          <li>{{ msg }}</li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p class="empty">No messages yet. Add one above! ☝️</p>
-    {% endif %}
-
+  <!-- Stats -->
+  <div class="stats" style="width:100%;max-width:700px;">
+    <div class="stat">
+      <div class="stat-val">{{ total }}</div>
+      <div class="stat-label">Total tasks</div>
+    </div>
+    <div class="stat done-stat">
+      <div class="stat-val">{{ done }}</div>
+      <div class="stat-label">Completed</div>
+    </div>
+    <div class="stat pend-stat">
+      <div class="stat-val">{{ total - done }}</div>
+      <div class="stat-label">Remaining</div>
+    </div>
   </div>
 
-  <p class="footer">Built with <span>Flask</span> · Containerized with <span>Docker</span></p>
+  <!-- Add task -->
+  <form class="add-form" action="/add" method="POST">
+    <label class="form-label" for="title">New task</label>
+    <div class="form-row">
+      <input id="title" type="text" name="title" placeholder="What needs to be done?" autocomplete="off"/>
+      <select name="priority">
+        <option value="low">Low</option>
+        <option value="medium" selected>Medium</option>
+        <option value="high">High</option>
+      </select>
+      <button class="btn-add" type="submit">Add</button>
+    </div>
+  </form>
+
+  <!-- Task list -->
+  <div class="task-list-wrap">
+    <div class="list-header">Tasks — {{ total }} items</div>
+
+    {% if tasks %}
+    <div class="task-list">
+      {% for task in tasks | reverse %}
+      <div class="task-card {% if task.done %}is-done{% endif %}">
+
+        <!-- toggle done -->
+        <div class="check-wrap">
+          <a href="/toggle/{{ task.id }}">{% if task.done %}✓{% endif %}</a>
+        </div>
+
+        <div class="task-body">
+          <div class="task-title">{{ task.title }}</div>
+          <div class="task-meta">
+            <span class="priority-badge {{ task.priority }}">{{ task.priority }}</span>
+            <span class="task-time">{{ task.created_at }}</span>
+          </div>
+        </div>
+
+        <!-- delete -->
+        <a class="btn-del" href="/delete/{{ task.id }}" title="Delete">✕</a>
+
+      </div>
+      {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="empty">
+      <div class="empty-icon">📋</div>
+      <p>No tasks yet — add one above.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <footer>
+    running inside a <span>docker</span> container &nbsp;·&nbsp; flask + python
+  </footer>
 
 </body>
 </html>
